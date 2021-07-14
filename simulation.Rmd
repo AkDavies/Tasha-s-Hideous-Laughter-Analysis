@@ -1,0 +1,55 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+
+```{r}
+br_darcy <- c("0" = 24, "1" = 22, "2" = 9, "3" = 3)
+
+cast_tasha <- function(deck){
+    total_mana_value <- 0
+    num_cards_milled <- 0
+    while (total_mana_value < 20) {
+        mana_values <- as.integer(names(deck))
+        quantities <- deck
+        if (length(deck) == 0) break
+        
+        x <- sample(rep(mana_values, quantities), size = 1)
+        
+        total_mana_value <- total_mana_value + x
+        deck[as.character(x)] <- deck[as.character(x)] - 1
+        num_cards_milled <- num_cards_milled + 1
+    }
+    
+    return(num_cards_milled)
+}
+
+cast_tasha(br_darcy)
+
+foo <- replicate(10000, cast_tasha(br_darcy))
+mean(foo)
+hist(foo)
+```
+
+```{r}
+keepwhile <- function(vec, predicate){
+    if (isTRUE(predicate(vec[1]))){
+        return(c(vec[1], keepwhile(vec[-1], predicate)))
+    }
+    return(NULL)
+}
+
+parse_decklist <- function(deck_file){
+    decklist <- readLines(con = deck_file)
+    main_deck <- keepwhile(decklist, function(x) x != "")
+    m <- regexec("(\\d) (.*)", main_deck)
+    parts <- do.call(rbind, lapply(regmatches(main_deck, m), `[`, c(2,3)))
+    colnames(parts) <- c("Quantity", "Name")
+    return(parts)
+}
+
+parse_decklist("decklists/[MH2] RB Delerium Rock.txt")
+```
+
